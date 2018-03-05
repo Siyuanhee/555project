@@ -228,13 +228,12 @@ public class GED {
                     }
 
                     child = sb1.toString();
-                    //child = "{'" + indEnt.getValue().getFAMC() + "'}";
                 }
 
                 if (indEnt.getValue().getFAMS().isEmpty()) {
                     spouse = "NA";
                 }
-                else {////////////////
+                else {
                     Iterator<String> it = indEnt.getValue().getFAMS().iterator();
                     StringBuilder sb2 = new StringBuilder(spouse);
                     
@@ -248,7 +247,6 @@ public class GED {
                     }
 
                     spouse = sb2.toString();
-                    //spouse = "{'" + indEnt.getValue().getFAMS() + "'}";
                 }
 
                 tI.appendRow();
