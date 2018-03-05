@@ -431,7 +431,7 @@ public class GED {
 
                 }
                 else if (!indEnt.getValue().getBirthday().before(indEnt.getValue().getDeath()))
-                    errors.add("Error US03: Birth date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")" + " occurs after his death date.");
+                    errors.add("Error US03: Birth date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")" + " occurs after death date.");
                 
         }
         } catch (Exception e) {
