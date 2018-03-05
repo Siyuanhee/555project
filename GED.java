@@ -41,6 +41,8 @@ public class GED {
     private void checkErrors () {
         datesBeforeCurrentDate ();//US01
         birthBeforeMarriage ();//US02
+        birthBeforeDeath();//US03
+        marriageBeforeDivorce();//US04
     }
     
     public void traversal() throws FileNotFoundException, IOException, ParseException {
@@ -413,7 +415,53 @@ public class GED {
         } catch (Exception e) {
             System.err.println(e.toString());
         }
-    }    
+    }   
+    
+    private void birthBeforeDeath() { //US03
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+
+                if (indEnt.getValue().getBirthday() == null) {
+
+                }
+                else if (indEnt.getValue().getDeath() == null) {
+
+                }
+                else if (!indEnt.getValue().getBirthday().before(indEnt.getValue().getDeath()))
+                    errors.add("Error US03: Birth date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")" + " occurs after his deathdate.");
+                
+        }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+    
+    private void marriageBeforeDivorce() { //US04
+    	Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
+
+        try {
+            while (famIt.hasNext()) {
+                Map.Entry<String, Family> famEnt = famIt.next();
+
+                if (famEnt.getValue().getMarried() == null) {
+
+                }
+                else if (famEnt.getValue().getDivorced() == null) {
+
+                }
+                else if (!famEnt.getValue().getMarried().before(famEnt.getValue().getDivorced()))
+                    errors.add("Error US04: familf" + "(" +famEnt.getValue().getID() + ")" + "Husband: " 
+                               + famEnt.getValue().getHusbandName() + "(" + famEnt.getValue().getHusbandID() + ")" + "Wife: " 
+                               + famEnt.getValue().getWifeName() + "(" + famEnt.getValue().getWifeID() + ")" + " married date occurs after divorced.");
+                
+        }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
     
     private void marriageBeforeDeath() { //US05
         Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
