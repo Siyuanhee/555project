@@ -351,4 +351,27 @@ public class GED {
         }
         
     }
+    
+    public void errorsPrint(){
+    	
+    	File fileOut = new File("towTables.txt");
+    	Iterator<String> linkedSetStringIt = error.iterator();
+    	
+    	try {
+    		FileWriter fw = new FileWriter(fileOut, true);
+            BufferedWriter out = new BufferedWriter(fw);
+            out.write("Errors:\r\n");
+        while(linkedSetStringIt.hasNext()) {  
+            out.write(linkedSetStringIt.next());
+        }    
+            
+            if (!fileOut.exists()) {
+                fileOut.createNewFile();
+            }
+
+            out.close();
+        } catch (IOException e) {
+            System.err.println(e.toString());
+        }
+    }
 }
