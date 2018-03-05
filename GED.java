@@ -431,7 +431,7 @@ public class GED {
 
                 }
                 else if (!indEnt.getValue().getBirthday().before(indEnt.getValue().getDeath()))
-                    errors.add("Error US03: Birth date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")" + " occurs after his deathdate.");
+                    errors.add("Error US03: Birth date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")" + " occurs after his death date.");
                 
         }
         } catch (Exception e) {
@@ -453,8 +453,8 @@ public class GED {
 
                 }
                 else if (!famEnt.getValue().getMarried().before(famEnt.getValue().getDivorced()))
-                    errors.add("Error US04: familf" + "(" +famEnt.getValue().getID() + ")" + "Husband: " 
-                               + famEnt.getValue().getHusbandName() + "(" + famEnt.getValue().getHusbandID() + ")" + "Wife: " 
+                    errors.add("Error US04: familf" + "(" +famEnt.getValue().getID() + ")" + " Husband: " 
+                               + famEnt.getValue().getHusbandName() + "(" + famEnt.getValue().getHusbandID() + ")" + " Wife: " 
                                + famEnt.getValue().getWifeName() + "(" + famEnt.getValue().getWifeID() + ")" + " married date occurs after divorced.");
                 
         }
