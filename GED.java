@@ -469,7 +469,7 @@ public class GED {
 
                 }
                 else if (!famEnt.getValue().getMarried().before(famEnt.getValue().getDivorced()))
-                    errors.add("Error US04: family" + "(" +famEnt.getValue().getID() + ")" + " Husband: " 
+                    errors.add("Error US04: Family" + "(" +famEnt.getValue().getID() + ")" + " Husband: " 
                                + famEnt.getValue().getHusbandName() + "(" + famEnt.getValue().getHusbandID() + ")" + " Wife: " 
                                + famEnt.getValue().getWifeName() + "(" + famEnt.getValue().getWifeID() + ")" + " married date occurs after divorced.");
                 
