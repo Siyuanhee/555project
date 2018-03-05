@@ -16,10 +16,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -30,19 +30,17 @@ import java.util.Set;
 public class GED {
     Map<String, Individual> individuals;
     Map<String, Family> families;
-    Set<String> error;
+    Set<String> errors;
 
     public GED() {
         this.individuals =  new LinkedHashMap();
         this.families = new LinkedHashMap();
-        this.error = new LinkedHashSet<String>();
+        this.errors = new LinkedHashSet();
     }
     
-    boolean birthBeforeDeath (Date birthday, Date death) {//判断前时间是否在后时间的前面
-        if (birthday == null || death == null)// 只要有一个时间为空都返回真，考虑到不确定出生标签和死亡标签那个先出现
-            return true;
-        
-        return birthday.before(death);
+    private void checkErrors () {
+        datesBeforeCurrentDate ();//US01
+        birthBeforeMarriage ();//US02
     }
     
     public void traversal() throws FileNotFoundException, IOException, ParseException {
@@ -86,8 +84,8 @@ public class GED {
                     if (sc.hasNextLine()) {
                         line = sc.nextLine().trim();
                         
-                        if (line.startsWith("2") && line.contains("DATE")) {//同出生日期
-                            individuals.get(indKey).setDeath(formatter.parse(line.substring(7)));
+                        if (line.startsWith("2") && line.contains("DATE")) {
+                                individuals.get(indKey).setDeath(formatter.parse(line.substring(7)));
                         }
                     }
                 }
@@ -352,61 +350,91 @@ public class GED {
         
     }
     
-    public void US03(){//birthBeforeDeath
-
-    	Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+    void datesBeforeCurrentDate () {//US01
+        Date now = new Date();
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+        Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
         
-        while (indIt.hasNext()) {
-            Map.Entry<String, Individual> indEnt = indIt.next();
-            if(indEnt.getValue().getBirthday() != null && indEnt.getValue().getDeath() != null ){
-            	if(!indEnt.getValue().getBirthday().before(indEnt.getValue().getDeath()))
-            		error.add("Error US03:Birth date of " + indEnt.getValue().getName().replaceAll("/"," " )+indEnt.getValue().getID() + " occurs after his deathdate.\r\n");		
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                
+                if (indEnt.getValue().getBirthday() == null) {
+                }
+                else if (indEnt.getValue().getBirthday().after(now)) 
+                     errors.add("Error US01: Birthday of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
+                
+                if (indEnt.getValue().getDeath() == null) {
+                }
+                else if (indEnt.getValue().getDeath().after(now))
+                    errors.add("Error US01: Death day of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
             }
+            
+            while (famIt.hasNext()) {
+                Map.Entry<String, Family> famEnt = famIt.next();
+                
+                if (famEnt.getValue().getMarried() == null) {
+                }
+                else if (famEnt.getValue().getMarried().after(now))
+                    errors.add("Error US01: Married day of " + famEnt.getValue().getHusbandName() + " and " + famEnt.getValue().getWifeName() + "(family:" + famEnt.getValue().getID() +") occurrs after the current date");
+                
+                if (famEnt.getValue().getDivorced() == null) {
+                }
+                else if (famEnt.getValue().getDivorced().after(now))
+                    errors.add("Error US01: Divorced day of " + famEnt.getValue().getHusbandName() + " and " + famEnt.getValue().getWifeName() + "(family:" + famEnt.getValue().getID() +") occurrs after the current date");
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
         }
     }
     
-    public void US04(){//marriageBeforeDivorce
-
-    	Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
-       
-        while (famIt.hasNext()) {
-        	
-            Map.Entry<String, Family> famEnt = famIt.next();
-       
-            Date marriage = famEnt.getValue().getMarried();
-            Date divorced = famEnt.getValue().getDivorced();
-            if(marriage != null && divorced!= null){
-            	if(!marriage.before(divorced))
-            		error.add("Error US04:familf " +famEnt.getValue().getID() + " married date occurs after divorced.\r\n");
-            }
-        }    
-    }
-    
-    void check(){
-    	
-    	US03();
-    	US04();
-    }
-    
-    public void errorsPrint(){
+    void birthBeforeMarriage () {//US02
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
         
-        check();
-    	
-    	File fileOut = new File("towTables.txt");
-    	Iterator<String> linkedSetStringIt = error.iterator();
-    	
-    	try {
-    		FileWriter fw = new FileWriter(fileOut, true);
-            BufferedWriter out = new BufferedWriter(fw);
-            out.write("Errors:\r\n");
-        while(linkedSetStringIt.hasNext()) {  
-            out.write(linkedSetStringIt.next());
-        }    
-            
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+                
+                while (spIt.hasNext()) {
+                    String str = spIt.next();
+                    
+                    if (families.get(str).getMarried() == null) {
+                    }
+                    else if (families.get(str).getMarried().before(indEnt.getValue().getBirthday()))
+                        errors.add("Error US02: Marriaged date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is before the birthday");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+    
+    /**
+     *check errors by user stories, and then print all errors
+     *checking must be before print
+     */
+    public void errorsPrint () {
+        checkErrors();//check with users stories
+        File fileOut = new File("resource/towTables.txt");
+        Iterator<String> errIt = errors.iterator();
+        
+        try {
             if (!fileOut.exists()) {
                 fileOut.createNewFile();
             }
-
+            
+            FileWriter fw = new FileWriter(fileOut, true);
+            BufferedWriter out = new BufferedWriter(fw);
+            
+            out.write("Errors:\n");
+            
+            
+            while (errIt.hasNext()) {
+                String errStr = errIt.next();
+                out.write(errStr + "\n");
+            }
+            
             out.close();
         } catch (IOException e) {
             System.err.println(e.toString());
