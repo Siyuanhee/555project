@@ -214,7 +214,7 @@ public class GED {
                 if (indEnt.getValue().getFAMC().isEmpty()) {
                     child = "NA";
                 }
-                else {///////////
+                else {
                     Iterator<String> it = indEnt.getValue().getFAMC().iterator();
                     StringBuilder sb1 = new StringBuilder(child);
                     
