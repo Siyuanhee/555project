@@ -350,7 +350,7 @@ public class GED {
         
     }
     
-    void datesBeforeCurrentDate () {//US01
+    private void datesBeforeCurrentDate () {//US01
         Date now = new Date();
         Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
         Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
@@ -388,7 +388,7 @@ public class GED {
         }
     }
     
-    void birthBeforeMarriage () {//US02
+    private void birthBeforeMarriage () {//US02
         Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
         
         try {
