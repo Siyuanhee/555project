@@ -177,6 +177,7 @@ public class GED {
         SimpleDateFormat indFormatNoE = new SimpleDateFormat("yyyy-MM-dd");
         File fileOut = new File("resource/towTables.txt");
         ConsoleTable tI = new ConsoleTable(9, true);
+        
         tI.appendRow();
         tI.appendColum("ID").appendColum("Name").appendColum("Gender").appendColum("Birthday").appendColum("Age").appendColum("Alive").appendColum("Death").appendColum("Child").appendColum("Spouse");
         
