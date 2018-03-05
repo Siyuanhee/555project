@@ -336,6 +336,7 @@ public class GED {
             if (!fileOut.exists()) {
                 fileOut.createNewFile();
             }
+
             
             FileWriter fw = new FileWriter(fileOut, true);
             BufferedWriter out = new BufferedWriter(fw);
@@ -345,6 +346,7 @@ public class GED {
             out.close();
         } catch (IOException e) {
             System.err.println(e.toString());
+
         }
         
     }
@@ -354,6 +356,7 @@ public class GED {
         Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
         Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
         
+
         try {
             while (indIt.hasNext()) {
                 Map.Entry<String, Individual> indEnt = indIt.next();
@@ -363,9 +366,11 @@ public class GED {
                 else if (indEnt.getValue().getBirthday().after(now)) 
                      errors.add("Error US01: Birthday of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
                 
+
                 if (indEnt.getValue().getDeath() == null) {
                 }
                 else if (indEnt.getValue().getDeath().after(now))
+
                     errors.add("Error US01: Death day of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
             }
             
@@ -375,6 +380,7 @@ public class GED {
                 if (famEnt.getValue().getMarried() == null) {
                 }
                 else if (famEnt.getValue().getMarried().after(now))
+
                     errors.add("Error US01: Married day of " + famEnt.getValue().getHusbandName() + " and " + famEnt.getValue().getWifeName() + "(family:" + famEnt.getValue().getID() +") occurrs after the current date");
                 
                 if (famEnt.getValue().getDivorced() == null) {
@@ -407,7 +413,60 @@ public class GED {
         } catch (Exception e) {
             System.err.println(e.toString());
         }
+    }    
+    
+    private void marriageBeforeDeath() { //US05
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+
+                while (spIt.hasNext()) {
+                    String str = spIt.next();
+
+                    if (families.get(str).getMarried() == null) {
+
+                    }
+                    else if (indEnt.getValue().getDeath() == null) {
+
+                    }
+                    else if (families.get(str).getMarried().after(indEnt.getValue().getDeath()))
+                        errors.add("Error US05: Marriaged date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is after the death date.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
     }
+
+    private void divorceBeforeDeath() { //US06
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+
+                while (spIt.hasNext()) {
+                    String str = spIt.next();
+
+                    if (families.get(str).getDivorced() == null) {
+
+                    }
+                    else if (indEnt.getValue().getDeath() == null) {
+
+                    }
+                    else if (families.get(str).getMarried().after(indEnt.getValue().getDeath()))
+                        errors.add("Error US06: Divorced date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is after the death date.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+    
     
     /**
      *check errors by user stories, and then print all errors
