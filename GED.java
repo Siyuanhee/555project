@@ -155,7 +155,7 @@ public class GED {
         
     }
     
-    private static int getAgeByBirth(Date birthday) {
+    private static int getAgeByBirthAndDeath(Date birthday, Date Death) {
         int age = 0;
         
         try {
@@ -163,16 +163,32 @@ public class GED {
             now.setTime(new Date());
 
             Calendar birth = Calendar.getInstance();
+            Calendar death = Calendar.getInstance();
             birth.setTime(birthday);
-
-            if (birth.after(now)) {
-                age = 0;
-            } else {
-                age = now.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
-                if (now.get(Calendar.DAY_OF_YEAR) < birth.get(Calendar.DAY_OF_YEAR)) {
-                    age -= 1;
-                }
+            
+            if(Death == null){
             }
+            if (birth.after(now)) {
+	        age = 0;
+	    } else{
+	        age = now.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
+	        if (now.get(Calendar.DAY_OF_YEAR) < birth.get(Calendar.DAY_OF_YEAR)) {
+	            age -= 1;
+	        }
+	    }
+
+            if(Death != null){
+            	death.setTime(Death);
+            	if(birth.after(death)){
+    	  		age = 0;
+            	}else{
+		    age = death.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
+		    if (death.get(Calendar.DAY_OF_YEAR) < birth.get(Calendar.DAY_OF_YEAR)) {
+		        age -= 1;
+		    }
+            	}
+            }	
+    
             return age;
         } catch (Exception e) {
             System.err.println(e.toString());
