@@ -43,9 +43,13 @@ public class GED {
         birthBeforeMarriage ();//US02
         birthBeforeDeath();//US03
         marriageBeforeDivorce();//US04
+        marriageBeforeDeath();//US05
+        divorceBeforeDeath();//US06
+        lessThan150();//US07
         birthBeforeMarriageOfParents();//US08
         BirthBeforeDeathOfParents ();//US09
         MarriageAfter14();//US10
+        noBigamy();//US11
         parentsNotTooOld();//US12
     }
     
@@ -437,6 +441,81 @@ public class GED {
         }
     }
     
+    private void marriageBeforeDeath() { //US05
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+
+                while (spIt.hasNext()) {
+                    String str = spIt.next();
+
+                    if (families.get(str).getMarried() == null) {
+
+                    }
+                    else if (indEnt.getValue().getDeath() == null) {
+
+                    }
+                    else if (families.get(str).getMarried().after(indEnt.getValue().getDeath()))
+                        errors.add("Error US05: Marriaged date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is after the death date.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+
+    private void divorceBeforeDeath() { //US06
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+
+                while (spIt.hasNext()) {
+                    String str = spIt.next();
+
+                    if (families.get(str).getDivorced() == null) {
+
+                    }
+                    else if (indEnt.getValue().getDeath() == null) {
+
+                    }
+                    else if (families.get(str).getMarried().after(indEnt.getValue().getDeath()))
+                        errors.add("Error US06: Divorced date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is after the death date.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+        private void lessThan150() { //US07
+        Date now = new Date();
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while(indIt.hasNext()){
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+                int age;
+                if (indEnt.getValue().getDeath() == null){
+                    age = GED.getAgeByBirthAndDeath(indEnt.getValue().getBirthday(), now);
+                }
+                else{
+                    age = GED.getAgeByBirthAndDeath(indEnt.getValue().getBirthday(),indEnt.getValue().getDeath());
+                }
+                if (age > 150){
+                    errors.add("Error: US07: age ofDinkar /Chikane/is greater than 150.");
+                }
+            }
+        }catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
     private void birthBeforeMarriageOfParents() { //US08
         Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
         Calendar birth = Calendar.getInstance();
@@ -520,6 +599,42 @@ public class GED {
             }
         } catch (Exception e) {
             System.err.println(e.toString());
+        }
+    }
+    
+        private void noBigamy() { //US11
+        Date now = new Date();
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()){
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
+                Map<Date, Date> marriage = new HashMap<>();
+
+                while (spIt.hasNext()){
+                    String str = spIt.next();
+                    if (families.get(str).getDivorced() == null){
+                        marriage.put(families.get(str).getMarried(), now);
+                    }
+                    else{
+                        marriage.put(families.get(str).getMarried(),families.get(str).getDivorced());
+                    }
+                }
+
+                for (Map.Entry<Date, Date> entry: marriage.entrySet()){
+                    for (Date key: marriage.keySet()){
+                        if (key.after(entry.getKey()) && key.before(entry.getValue())){
+                            errors.add("Error: US11: " + indEnt.getValue().getName() + "has bigamy!");
+
+                        }
+                    }
+                }
+
+            }
+
+        }catch (Exception e) {
+            System.out.println(e.toString());
         }
     }
     
