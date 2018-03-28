@@ -2,80 +2,79 @@ package gedcomreader;
 
 import static org.junit.Assert.*;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+public class siyuanUSTest {
 
-public class HSprint1Test {
-// test for US04
-	@Test 
-	
-	public void testBirthBeforeDeath() throws ParseException {
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		System.out.println("Test begin");
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		System.out.println("Test END");
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		System.out.println("begin to setup");
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		System.out.println("Test done");
+	}
+
+	@Test
+	public void testBirthBeforeDeath() throws ParseException, FileNotFoundException, IOException {
+		GED GEDTest = new GED();
+		GEDTest.traversal();
+		GEDTest.checkErrors();
 		
-		SimpleDateFormat formatter = new SimpleDateFormat ("d MMM yyyy", Locale.ENGLISH);
+		assertTrue(GEDTest.errors.contains("Error US03: Birth date of Sarah /Lewis/(I12) occurs after death date."));
+
+	}
+
+	@Test
+	public void testMarriageBeforeDivorce() throws ParseException, FileNotFoundException, IOException {
 		
-		Individual I1 = new Individual();
-		Individual I2 = new Individual();
-		Individual I3 = new Individual();
-		Individual I4 = new Individual();
-		Individual I5 = new Individual();
+		GED GEDTest = new GED();
+		GEDTest.traversal();
+		GEDTest.checkErrors();
 		
-		I1.setBirthday(formatter.parse("01 JAN 1980"));
-		I1.setDeath(formatter.parse("02 FEB 2010"));
+		assertTrue(GEDTest.errors.contains("Error US04: Family(F2) Husband: David /Brown/(I2) Wife: Jennifer /Brown/(I3) married date occurs after divorced."));
 		
-		I2.setBirthday(formatter.parse("03 FEB 1980"));
-		I2.setDeath(formatter.parse("04 JAN 2010"));
+	}
+
+	@Test
+	public void testBirthAfterMarriageOfParents() throws ParseException, FileNotFoundException, IOException {
 		
-		I3.setBirthday(formatter.parse("05 MAR 2017"));
-		I3.setDeath(formatter.parse("06 APR 2010"));
+		GED GEDTest = new GED();
+		GEDTest.traversal();
+		GEDTest.checkErrors();
 		
-		I4.setBirthday(formatter.parse("07 JUN 2010"));
-		I4.setDeath(formatter.parse("07 MAY 2010"));
+		assertTrue(GEDTest.errors.contains("Error US08: Birthday of John /Brown/(I1) in the family of F2 is more than 9 months after parents divorce."));
 		
-		I5.setBirthday(formatter.parse("09 DEC 1980"));
-		I5.setDeath(formatter.parse("08 DEC 1980"));
-		
-		assertEquals(true, US.birthBeforeDeath(I1));
-		assertEquals(true, US.birthBeforeDeath(I2));
-		assertEquals(false, US.birthBeforeDeath(I3));
-		assertEquals(false, US.birthBeforeDeath(I4));
-		assertEquals(false, US.birthBeforeDeath(I5));
 	}
 	
-	public void testmarriageBeforeDivorce() throws ParseException{
+	@Test
+	public void testParentsNotTooOld() throws ParseException, FileNotFoundException, IOException {
 		
-		SimpleDateFormat formatter = new SimpleDateFormat ("d MMM yyyy", Locale.ENGLISH);
+		GED GEDTest = new GED();
+		GEDTest.traversal();
+		GEDTest.checkErrors();
 		
-		Family F1 = new Family();
-		Family F2 = new Family();
-		Family F3 = new Family();
-		Family F4 = new Family();
-		Family F5 = new Family();
+		assertTrue(GEDTest.errors.contains("Error US12: Age of mother Jennifer /Brown/(I3) is more than 60 years older than her children John /Brown/(I1)."));
+		assertTrue(GEDTest.errors.contains("Error US12: Age of father Joseph /James/(I9) is more than 80 years older than his children Karen /James/(I4)."));
 		
-		F1.setMarried(formatter.parse("01 JAN 1980"));
-		F1.setDivorced(formatter.parse("02 FEB 2010"));
-		
-		F2.setMarried(formatter.parse("03 FEB 1980"));
-		F2.setDivorced(formatter.parse("04 JAN 2010"));
-		
-		F3.setMarried(formatter.parse("05 MAR 2017"));
-		F3.setDivorced(formatter.parse("06 APR 2010"));
-		
-		F4.setMarried(formatter.parse("07 JUN 2010"));
-		F4.setDivorced(formatter.parse("07 MAY 2010"));
-		
-		F5.setMarried(formatter.parse("09 DEC 1980"));
-		F5.setDivorced(formatter.parse("08 DEC 1980"));
-		
-		assertEquals(true, US.marriageBeforeDivorce(F1));
-		assertEquals(true, US.marriageBeforeDivorce(F2));
-		assertEquals(false, US.marriageBeforeDivorce(F3));
-		assertEquals(false, US.marriageBeforeDivorce(F4));
-		assertEquals(false, US.marriageBeforeDivorce(F5));
 	}
-	
-	
+
 }
