@@ -38,13 +38,11 @@ public class GED {
         this.errors = new LinkedHashSet();
     }
     
-    private void checkErrors () {
+    private void checkErrors () {//讨论一下要不要把user story写到其他文件夹里去，并且check是否应该在解析之后！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         datesBeforeCurrentDate ();//US01
         birthBeforeMarriage ();//US02
-        birthBeforeDeath();//US03
-        marriageBeforeDivorce();//US04
-	birthBeforeMarriageOfParents();//US08
-        parentsNotTooOld();//US12
+        BirthBeforeDeathOfParents ();//US09
+        MarriageAfter14();//US10
     }
     
     public void traversal() throws FileNotFoundException, IOException, ParseException {
@@ -135,10 +133,8 @@ public class GED {
             }
             
             //get husband's name and wife's name by the connection between two classes
-            Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();//声明一个迭代器，等于这个集合入口的迭代器，用以遍历
-            
-            while (famIt.hasNext()) {//整个集合跑一遍，用来给丈夫和妻子的名字赋值，因为GEDCOM的家庭只记录id，没有名字，所以需要另外去个人信息调出来
-                Map.Entry<String, Family> famEnt = famIt.next();
+
+            for (Map.Entry<String, Family> famEnt : families.entrySet()) {//整个集合跑一遍，用来给丈夫和妻子的名字赋值，因为GEDCOM的家庭只记录id，没有名字，所以需要另外去个人信息调出来
                 famEnt.getValue().setHusbandName(individuals.get(famEnt.getValue().getHusbandID()).getName());
                 famEnt.getValue().setWifeName(individuals.get(famEnt.getValue().getWifeID()).getName());
             }
@@ -151,7 +147,7 @@ public class GED {
         
     }
     
-    private static int getAgeByBirthAndDeath(Date birthday, Date Death) {
+    private static int getAgeByBirth(Date birthday) {
         int age = 0;
         
         try {
@@ -159,32 +155,16 @@ public class GED {
             now.setTime(new Date());
 
             Calendar birth = Calendar.getInstance();
-            Calendar death = Calendar.getInstance();
             birth.setTime(birthday);
-            
-            if(Death == null){
-            }
-            if (birth.after(now)) {
-	        age = 0;
-	    } else{
-	        age = now.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
-	        if (now.get(Calendar.DAY_OF_YEAR) < birth.get(Calendar.DAY_OF_YEAR)) {
-	            age -= 1;
-	        }
-	    }
 
-            if(Death != null){
-            	death.setTime(Death);
-            	if(birth.after(death)){
-    	  		age = 0;
-            	}else{
-		    age = death.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
-		    if (death.get(Calendar.DAY_OF_YEAR) < birth.get(Calendar.DAY_OF_YEAR)) {
-		        age -= 1;
-		    }
-            	}
-            }	
-    
+            if (birth.after(now)) {
+                age = 0;
+            } else {
+                age = now.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
+                if (now.get(Calendar.DAY_OF_YEAR) < birth.get(Calendar.DAY_OF_YEAR)) {
+                    age -= 1;
+                }
+            }
             return age;
         } catch (Exception e) {
             System.err.println(e.toString());
@@ -215,7 +195,7 @@ public class GED {
 
                 indBirthday = indFormatNoE.format(indEnt.getValue().getBirthday());
 
-                age = String.valueOf(GED.getAgeByBirthAndDeath(indEnt.getValue().getBirthday(),indEnt.getValue().getDeath()));
+                age = String.valueOf(GED.getAgeByBirth(indEnt.getValue().getBirthday()));
                 
                 child = "{}";
                 spouse = "{}";
@@ -356,7 +336,6 @@ public class GED {
             if (!fileOut.exists()) {
                 fileOut.createNewFile();
             }
-
             
             FileWriter fw = new FileWriter(fileOut, true);
             BufferedWriter out = new BufferedWriter(fw);
@@ -366,43 +345,32 @@ public class GED {
             out.close();
         } catch (IOException e) {
             System.err.println(e.toString());
-
         }
         
     }
     
     private void datesBeforeCurrentDate () {//US01
         Date now = new Date();
-        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
-        Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
-        
 
         try {
-            while (indIt.hasNext()) {
-                Map.Entry<String, Individual> indEnt = indIt.next();
-                
+            for (Map.Entry<String, Individual> indEnt: individuals.entrySet()) {
                 if (indEnt.getValue().getBirthday() == null) {
                 }
-                else if (indEnt.getValue().getBirthday().after(now)) 
-                     errors.add("Error US01: Birthday of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
-                
+                else if (indEnt.getValue().getBirthday().after(now))
+                    errors.add("Error US01: Birthday of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
 
                 if (indEnt.getValue().getDeath() == null) {
                 }
                 else if (indEnt.getValue().getDeath().after(now))
-
                     errors.add("Error US01: Death day of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") occurrs after the current date");
             }
-            
-            while (famIt.hasNext()) {
-                Map.Entry<String, Family> famEnt = famIt.next();
-                
+
+            for (Map.Entry<String, Family> famEnt: families.entrySet()) {
                 if (famEnt.getValue().getMarried() == null) {
                 }
                 else if (famEnt.getValue().getMarried().after(now))
-
                     errors.add("Error US01: Married day of " + famEnt.getValue().getHusbandName() + " and " + famEnt.getValue().getWifeName() + "(family:" + famEnt.getValue().getID() +") occurrs after the current date");
-                
+
                 if (famEnt.getValue().getDivorced() == null) {
                 }
                 else if (famEnt.getValue().getDivorced().after(now))
@@ -419,87 +387,36 @@ public class GED {
         try {
             while (indIt.hasNext()) {
                 Map.Entry<String, Individual> indEnt = indIt.next();
-                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
-                
-                while (spIt.hasNext()) {
-                    String str = spIt.next();
-                    
+
+                for (String str : indEnt.getValue().getFAMS()) {
                     if (families.get(str).getMarried() == null) {
-                    }
-                    else if (families.get(str).getMarried().before(indEnt.getValue().getBirthday()))
+                    } else if (families.get(str).getMarried().before(indEnt.getValue().getBirthday()))
                         errors.add("Error US02: Marriaged date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is before the birthday");
                 }
             }
         } catch (Exception e) {
             System.err.println(e.toString());
         }
-    }   
-    
-    private void birthBeforeDeath() { //US03
-        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
-
-        try {
-            while (indIt.hasNext()) {
-                Map.Entry<String, Individual> indEnt = indIt.next();
-
-                if (indEnt.getValue().getBirthday() == null) {
-
-                }
-                else if (indEnt.getValue().getDeath() == null) {
-
-                }
-                else if (!indEnt.getValue().getBirthday().before(indEnt.getValue().getDeath()))
-                    errors.add("Error US03: Birth date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")" + " occurs after death date.");
-                
-        }
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
     }
-    
-    private void marriageBeforeDivorce() { //US04
-    	Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
 
+    private void BirthBeforeDeathOfParents () {//US09
         try {
-            while (famIt.hasNext()) {
-                Map.Entry<String, Family> famEnt = famIt.next();
-
-                if (famEnt.getValue().getMarried() == null) {
-
-                }
-                else if (famEnt.getValue().getDivorced() == null) {
-
-                }
-                else if (!famEnt.getValue().getMarried().before(famEnt.getValue().getDivorced()))
-                    errors.add("Error US04: Family" + "(" +famEnt.getValue().getID() + ")" + " Husband: " 
-                               + famEnt.getValue().getHusbandName() + "(" + famEnt.getValue().getHusbandID() + ")" + " Wife: " 
-                               + famEnt.getValue().getWifeName() + "(" + famEnt.getValue().getWifeID() + ")" + " married date occurs after divorced.");
-                
-        }
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
-    }
-    
-    private void marriageBeforeDeath() { //US05
-        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
-
-        try {
-            while (indIt.hasNext()) {
-                Map.Entry<String, Individual> indEnt = indIt.next();
-                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
-
-                while (spIt.hasNext()) {
-                    String str = spIt.next();
-
-                    if (families.get(str).getMarried() == null) {
-
+            for (Map.Entry<String,Family> entry: families.entrySet()) {
+                if (individuals.get(entry.getValue().getHusbandID()).getDeath() != null ||
+                    individuals.get(entry.getValue().getWifeID()).getDeath() != null) {
+                    for (String child : entry.getValue().getChildren()) {
+                        if (individuals.get(entry.getValue().getHusbandID()).getDeath() != null) {
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTime(individuals.get(entry.getValue().getHusbandID()).getDeath());
+                            cal.add(Calendar.MONTH, 9);
+                            Date tempDate = cal.getTime();
+                            if (individuals.get(child).getBirthday().after(tempDate))
+                                errors.add("Error US09: Birthday of " + individuals.get(child).getName() + "(" + child + ") is after 9 months of father's Death date in the family of " + entry.getValue().getID());
+                        }
+                        else if (individuals.get(entry.getValue().getWifeID()).getDeath() != null && individuals.get(child).getBirthday().after(individuals.get(entry.getValue().getWifeID()).getDeath())) {
+                            errors.add("Error US09: Birthday of " + individuals.get(child).getName() + "(" + child + ") is after mother's Death date in the family of " + entry.getValue().getID());
+                        }
                     }
-                    else if (indEnt.getValue().getDeath() == null) {
-
-                    }
-                    else if (families.get(str).getMarried().after(indEnt.getValue().getDeath()))
-                        errors.add("Error US05: Marriaged date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is after the death date.");
                 }
             }
         } catch (Exception e) {
@@ -507,100 +424,32 @@ public class GED {
         }
     }
 
-    private void divorceBeforeDeath() { //US06
-        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
-
+    private void MarriageAfter14() {//US10
         try {
-            while (indIt.hasNext()) {
-                Map.Entry<String, Individual> indEnt = indIt.next();
-                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
-
-                while (spIt.hasNext()) {
-                    String str = spIt.next();
-
-                    if (families.get(str).getDivorced() == null) {
-
+            for (Map.Entry<String, Family> entry: families.entrySet()) {
+                if (getAgeByBirth(individuals.get(entry.getValue().getHusbandID()).getBirthday()) < 14) {
+                    errors.add("Error US10: " + individuals.get(entry.getValue().getHusbandID()).getName() + "（" + entry.getValue().getHusbandID() + ")" + " is less than 14, he illegally married, in the family of " + entry.getValue().getID());
+                }
+                else if (getAgeByBirth(individuals.get(entry.getValue().getWifeID()).getBirthday()) < 14) {
+                    errors.add("Error US10: " + individuals.get(entry.getValue().getWifeID()).getName() + "（" + entry.getValue().getWifeID() + ")" + " is less than 14; she illegally married, in the family of " + entry.getValue().getID());
+                }
+                else {
+                    Calendar marriedCal = Calendar.getInstance();
+                    marriedCal.setTime(entry.getValue().getMarried());
+                    Calendar tempBirth = Calendar.getInstance();
+                    tempBirth.setTime(individuals.get(entry.getValue().getHusbandID()).getBirthday());
+                    if (marriedCal.get(Calendar.YEAR) - tempBirth.get(Calendar.YEAR) <  14) {System.err.println(tempBirth.get(Calendar.YEAR) +" < "+ marriedCal.get(Calendar.YEAR)+" - 14");
+                        errors.add("Error US10: " + individuals.get(entry.getValue().getHusbandID()).getName() + "（" + entry.getValue().getHusbandID() + ")" + " was less than 14, when he got married, in the family of " + entry.getValue().getID());
                     }
-                    else if (indEnt.getValue().getDeath() == null) {
-
-                    }
-                    else if (families.get(str).getMarried().after(indEnt.getValue().getDeath()))
-                        errors.add("Error US06: Divorced date of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is after the death date.");
+                    tempBirth.setTime(individuals.get(entry.getValue().getWifeID()).getBirthday());
+                    if (marriedCal.get(Calendar.YEAR) - tempBirth.get(Calendar.YEAR) <  14)
+                        errors.add("Error US10: " + individuals.get(entry.getValue().getWifeID()).getName() + "（" + entry.getValue().getWifeID() + ")" + " was less than 14, when she got married, in the family of " + entry.getValue().getID());
                 }
             }
         } catch (Exception e) {
             System.err.println(e.toString());
         }
     }
-	
-    private void birthBeforeMarriageOfParents() { //US08
-        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
-        Calendar birth = Calendar.getInstance();
-        Calendar divorced = Calendar.getInstance();
-
-        try {
-            while (indIt.hasNext()) {
-                Map.Entry<String, Individual> indEnt = indIt.next();
-                Iterator<String> famcIt = indEnt.getValue().getFAMC().iterator();
-
-                while (famcIt.hasNext()) {
-                    String str = famcIt.next();
-                    birth.setTime(indEnt.getValue().getBirthday());
-                    divorced.setTime(families.get(str).getMarried());
-
-                    if (families.get(str).getMarried() == null) {
-
-                    }
-                    else if (indEnt.getValue().getBirthday() == null) {
-
-                    }else if (families.get(str).getDivorced() == null) {
-
-                    }
-                    else if (families.get(str).getMarried().after(indEnt.getValue().getBirthday()))
-                        errors.add("Error US08: Birthday of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is before the marriage of parents.");
-                    else if (((birth.get(Calendar.YEAR) - divorced.get(Calendar.YEAR))*12 + (birth.get(Calendar.MONTH) - divorced.get(Calendar.MONTH)) > 9))
-                        errors.add("Error US08: Birthday of " + indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ") in the family of " + families.get(str).getID() + " is more than 9 months after parents divorce.");
-                }
-            }
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
-    }
-    
-    private void parentsNotTooOld() { //US12
-        Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
-        Calendar husbandBirth = Calendar.getInstance();
-        Calendar wifeBirth = Calendar.getInstance();
-        Calendar childBirth = Calendar.getInstance();
-
-        try {
-            while (famIt.hasNext()) {
-                Map.Entry<String, Family> famEnt = famIt.next();
-                Iterator<String> chIt = famEnt.getValue().getChildren().iterator();
-
-                while (chIt.hasNext()) {
-                    String str = chIt.next();
-                    husbandBirth.setTime(individuals.get(famEnt.getValue().getHusbandID()).getBirthday());
-                    wifeBirth.setTime(individuals.get(famEnt.getValue().getWifeID()).getBirthday());
-                    childBirth.setTime(individuals.get(str).getBirthday());
-
-                    if (famEnt.getValue().getHusbandID() == null) {
-                    }
-                    else if(childBirth.get(Calendar.YEAR) - husbandBirth.get(Calendar.YEAR) >= 80 ){
-                    	errors.add("Error US12: Age of father " + famEnt.getValue().getHusbandName() + "(" + famEnt.getValue().getHusbandID() + ") is more than 80 years older than his children " + individuals.get(str).getName() + "(" + individuals.get(str).getID() + ").");
-                    }
-                    
-                    if (famEnt.getValue().getWifeID() == null) {
-                    }else if(childBirth.get(Calendar.YEAR) - wifeBirth.get(Calendar.YEAR) >= 60){
-                    	errors.add("Error US12: Age of mother " + famEnt.getValue().getWifeName() + "(" + famEnt.getValue().getWifeID() + ") is more than 60 years older than her children " + individuals.get(str).getName() + "(" + individuals.get(str).getID() + ").");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
-    }
-    
     /**
      *check errors by user stories, and then print all errors
      *checking must be before print
