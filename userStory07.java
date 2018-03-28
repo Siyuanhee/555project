@@ -5,7 +5,6 @@ private void lessThan150() { //US07
         try {
             while(indIt.hasNext()){
                 Map.Entry<String, Individual> indEnt = indIt.next();
-                Iterator<String> spIt = indEnt.getValue().getFAMS().iterator();
                 int age;
                 if (indEnt.getValue().getDeath() == null){
                     age = GED.getAgeByBirthAndDeath(indEnt.getValue().getBirthday(), now);
