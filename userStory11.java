@@ -20,7 +20,7 @@
 
                 for (Map.Entry<Date, Date> entry: marriage.entrySet()){
                     for (Date key: marriage.keySet()){
-                        if (key.after(entry.getKey()) && key.after(entry.getValue())){
+                        if (key.after(entry.getKey()) && key.before(entry.getValue())){
                             errors.add("Error: US11: " + indEnt.getValue().getName() + "has bigamy!");
                         }
                     }
