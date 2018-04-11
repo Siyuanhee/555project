@@ -31,11 +31,13 @@ public class GED {
     Map<String, Individual> individuals;
     Map<String, Family> families;
     Set<String> errors;
+    String deceased;
 
     public GED() {
         this.individuals =  new LinkedHashMap();
         this.families = new LinkedHashMap();
         this.errors = new LinkedHashSet();
+	this.deceased = "";
     }
     
     private void checkErrors () {//讨论一下要不要把user story写到其他文件夹里去，并且check是否应该在解析之后！！！！！！！！！！！！！！！！！！！！！！！！！！！！
@@ -51,6 +53,8 @@ public class GED {
         MarriageAfter14();//US10
         noBigamy();//US11
         parentsNotTooOld();//US12
+	fewerThan15Siblings();//US15
+	listDeceased();//US29
     }
     
     public void traversal() throws FileNotFoundException, IOException, ParseException {
@@ -714,6 +718,31 @@ public class GED {
         }
     }
 	
+    private void fewerThan15Siblings() { //US15
+    	Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
+
+        try {
+            while (famIt.hasNext()) {
+                Map.Entry<String, Family> famEnt = famIt.next();
+                Iterator<String> chIt = famEnt.getValue().getChildren().iterator();
+                int count = 0;
+                
+                while (chIt.hasNext()) {
+                	String str = chIt.next();
+                	if (famEnt.getValue().getChildren() == null) {
+                    }else{
+                    	count += 1; 
+                    }
+                } 
+                //System.out.print(famEnt.getValue().getID()+" "  + count +" ");
+                if(count >= 15)
+                	errors.add("Error US15: Family (" + famEnt.getValue().getID() + ") " + "have 15 or more siblings");
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+		
 private void correctGender() { //US21
         Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
 
@@ -760,6 +789,23 @@ private void correctGender() { //US21
 
     }
 	
+    private void listDeceased() { //US29
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                
+                if(indEnt.getValue().getDeath() !=null) {
+                	deceased += indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")\r\n";
+                }  
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+	
     /**
      *check errors by user stories, and then print all errors
      *checking must be before print
@@ -789,5 +835,28 @@ private void correctGender() { //US21
         } catch (IOException e) {
             System.err.println(e.toString());
         }
+    }
+    
+    public void deceasedPrint () {
+    	if(deceased != null){
+	        File fileOut = new File("resource/towTables.txt");
+	        
+	        try {
+	            if (!fileOut.exists()) {
+	                fileOut.createNewFile();
+	            }
+	            
+	            FileWriter fw = new FileWriter(fileOut, true);
+	            BufferedWriter out = new BufferedWriter(fw);
+	            
+	            out.write("Deceased individuals:\r\n");
+	            
+	                out.write(deceased);
+	            
+	            out.close();
+	        } catch (IOException e) {
+	            System.err.println(e.toString());
+	        }
+	    }
     }
 }
