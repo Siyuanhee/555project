@@ -713,7 +713,53 @@ public class GED {
             System.err.println(e.toString());
         }
     }
+	
+private void correctGender() { //US21
+        Iterator<Map.Entry<String, Family>> famIt = families.entrySet().iterator();
+
+        try {
+            while (famIt.hasNext()) {
+                Map.Entry<String, Family> famEnt = famIt.next();
+                if (individuals.get(famEnt.getValue().getHusbandID()).getGender() == 'F') {
+                    errors.add("US21 Error: Husband in family "+famEnt.getValue().getID()+ " has a wrong gender.");
+                }
+                if (individuals.get(famEnt.getValue().getWifeID()).getGender() == 'M') {
+                    errors.add("US21 Error: Wife in family "+famEnt.getValue().getID()+" has a wrong gender.");
+                }
+            }
+        }catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
     
+	private void uniqueNameAndBirth() { //US23
+        Iterator<Map.Entry<String,Individual>> indIt = individuals.entrySet().iterator();
+
+        SimpleDateFormat birthDateFormat = new SimpleDateFormat("MM-dd-yyyy");
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<Map.Entry<String,Individual>> indIt2 = individuals.entrySet().iterator();
+
+                while(indIt2.hasNext()) {
+                    Map.Entry<String, Individual> indEnt2 = indIt2.next();
+                    if (indEnt.getValue().getName().equals(indEnt2.getValue().getName()) && indEnt.getValue().getID() != indEnt2.getValue().getID()) {
+                        errors.add("US23 Error: There are two same names: "+ indEnt.getValue().getName());
+                    }
+
+                    if (indEnt.getValue().getBirthday().equals(indEnt2.getValue().getBirthday())  && indEnt.getValue().getID() != indEnt2.getValue().getID()) {
+                        errors.add(String.format("US23 Error: There are two same birthdays: " + birthDateFormat.format(indEnt.getValue().getBirthday())));
+                    }
+                }
+
+            }
+        }catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+    }
+	
     /**
      *check errors by user stories, and then print all errors
      *checking must be before print
