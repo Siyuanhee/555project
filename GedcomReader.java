@@ -31,6 +31,8 @@ public class GedcomReader {
         ged.individualsPrint();
         
         ged.familiesPrint();
+        
+        ged.deceasedPrint();
     }
     
 }
