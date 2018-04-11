@@ -5,6 +5,11 @@ import static org.junit.Assert.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class siyuanUSTest {
+	
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -76,5 +82,30 @@ public class siyuanUSTest {
 		assertTrue(GEDTest.errors.contains("Error US12: Age of father Joseph /James/(I9) is more than 80 years older than his children Karen /James/(I4)."));
 		
 	}
+	
+	@Test
+	public void testFewerThan15Siblings() throws ParseException, FileNotFoundException, IOException {
+		
+		GED GEDTest = new GED();
+		GEDTest.traversal();
+		GEDTest.checkErrors();
 
+		
+		assertTrue(GEDTest.errors.contains("Error US15: Family (F5) have 15 or more siblings"));
+		
+	}
+	
+	@Test
+	public void testListDeceased() throws ParseException, FileNotFoundException, IOException {
+		
+		GED GEDTest = new GED();
+		GEDTest.traversal();
+		GEDTest.checkErrors();
+
+		
+		assertTrue(GEDTest.deceased.contains("Jennifer /Brown/(I3)"));
+		assertTrue(GEDTest.deceased.contains("Joseph /James/(I9)"));
+		
+	}
+	
 }
