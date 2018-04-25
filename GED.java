@@ -788,6 +788,7 @@ private void correctGender() { //US21
         }
 
     }
+
 	
     private void UniqueFamilyBySpouse () {//US24
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -825,6 +826,49 @@ private void correctGender() { //US21
             System.err.println(e.toString());
         }
     }
+	
+    private void listMultipleBirth() { //US32
+        Iterator<Map.Entry<String,Individual>> indIt = individuals.entrySet().iterator();
+        SimpleDateFormat birthDateFormat = new SimpleDateFormat("MM-dd-yyyy");
+        Set<String> birthList = new LinkedHashSet<>();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<Map.Entry<String, Individual>> indIt2 = individuals.entrySet().iterator();
+
+                while (indIt2.hasNext()) {
+                    Map.Entry<String, Individual> indEnt2 = indIt2.next();
+                    if (indEnt.getValue().getBirthday().equals(indEnt2.getValue().getBirthday()) && indEnt.getValue().getID() != indEnt2.getValue().getID()) {
+                        errors.add(String.format("There are two same birthdays: " + birthDateFormat.format(indEnt.getValue().getBirthday())));
+                    }
+                }
+            }
+        }catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    private void listLargeAgeDifferences() { //US34
+        Iterator<Map.Entry<String,Family>> famIt = families.entrySet().iterator();
+        Set<String> ageList = new LinkedHashSet<>();
+        int hAge;
+        int wAge;
+
+        try {
+            while (famIt.hasNext()) {
+                Map.Entry<String, Family> famEnt = famIt.next();
+                hAge = GED.getAgeByBirthAndDeath(individuals.get(famEnt.getValue().getHusbandID()).getBirthday(),famEnt.getValue().getMarried());
+                wAge = GED.getAgeByBirthAndDeath(individuals.get(famEnt.getValue().getWifeID()).getBirthday(),famEnt.getValue().getMarried());
+                if (hAge >= wAge * 2 || wAge >= hAge * 2){
+                    errors.add("Family "+famEnt.getValue().getID()+" has a large age difference.");
+                }
+            }
+        }catch (Exception e){
+            System.out.println(e.toString());
+        }
+    }
+
 	
     /**
      *check errors by user stories, and then print all errors
