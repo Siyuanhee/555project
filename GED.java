@@ -40,7 +40,8 @@ public class GED {
 	this.deceased = "";
     }
     
-    private void checkErrors () {//讨论一下要不要把user story写到其他文件夹里去，并且check是否应该在解析之后！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+
+	private void checkErrors () {//讨论一下要不要把user story写到其他文件夹里去，并且check是否应该在解析之后！！！！！！！！！！！！！！！！！！！！！！！！！！！！
         datesBeforeCurrentDate ();//US01
         birthBeforeMarriage ();//US02
         birthBeforeDeath();//US03
@@ -55,6 +56,9 @@ public class GED {
         parentsNotTooOld();//US12
 	fewerThan15Siblings();//US15
 	listDeceased();//US29
+	listMultipleBirth();//US32
+        listLargeAgeDifferences(); //US34
+
     }
     
     public void traversal() throws FileNotFoundException, IOException, ParseException {
