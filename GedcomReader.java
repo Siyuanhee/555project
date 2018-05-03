@@ -32,7 +32,11 @@ public class GedcomReader {
         
         ged.familiesPrint();
         
-        ged.deceasedPrint();
+        ged.errorsPrint();
+        
+        ged.listPrint(ged.deceased,"Deceased individuals:\r\n");
+        ged.listPrint(ged.livingMarried,"Living Married individuals:\r\n");
+        ged.listPrint(ged.livingSingle,"Over 30 Living Single individuals:\r\n");
     }
     
 }
