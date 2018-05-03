@@ -31,13 +31,17 @@ public class GED {
     Map<String, Individual> individuals;
     Map<String, Family> families;
     Set<String> errors;
-    String deceased;
+    Set<String> deceased;
+    Set<String> livingMarried;
+    Set<String> livingSingle;
 
     public GED() {
         this.individuals =  new LinkedHashMap();
         this.families = new LinkedHashMap();
         this.errors = new LinkedHashSet();
-	this.deceased = "";
+	this.deceased = new LinkedHashSet();
+        this.livingMarried = new LinkedHashSet();
+        this.livingSingle = new LinkedHashSet();
     }
     
 
@@ -56,6 +60,8 @@ public class GED {
         parentsNotTooOld();//US12
 	fewerThan15Siblings();//US15
 	listDeceased();//US29
+	listLivingMarried();//US30
+        listLivingSingle();//US31
 	listMultipleBirth();//US32
         listLargeAgeDifferences(); //US34
 
@@ -831,6 +837,50 @@ private void correctGender() { //US21
         }
     }
 	
+    private void listLivingSingle() { //US31 over 30 never married
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> famsIt = indEnt.getValue().getFAMS().iterator();
+                
+                if(indEnt.getValue().getDeath() == null && getAgeByBirthAndDeath(indEnt.getValue().getBirthday(), indEnt.getValue().getDeath()) > 30) {
+                	while (!famsIt.hasNext()) {
+                		
+	                	livingSingle.add(indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")");
+	                	break;
+                	}
+                }  
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+	
+    private void listLivingSingle() { //US31 over 30 never married
+        Iterator<Map.Entry<String, Individual>> indIt = individuals.entrySet().iterator();
+
+        try {
+            while (indIt.hasNext()) {
+                Map.Entry<String, Individual> indEnt = indIt.next();
+                Iterator<String> famsIt = indEnt.getValue().getFAMS().iterator();
+                
+                if(indEnt.getValue().getDeath() == null && getAgeByBirthAndDeath(indEnt.getValue().getBirthday(), indEnt.getValue().getDeath()) > 30) {
+                	while (!famsIt.hasNext()) {
+                		
+	                	livingSingle.add(indEnt.getValue().getName() + "(" + indEnt.getValue().getID() + ")");
+	                	break;
+                	}
+                }  
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+	
     private void listMultipleBirth() { //US32
         Iterator<Map.Entry<String,Individual>> indIt = individuals.entrySet().iterator();
         SimpleDateFormat birthDateFormat = new SimpleDateFormat("MM-dd-yyyy");
@@ -905,9 +955,10 @@ private void correctGender() { //US21
         }
     }
     
-    public void deceasedPrint () {
-    	if(deceased != null){
+    public void listPrint (Set<String> s, String title) {
+    	if(s != null){
 	        File fileOut = new File("resource/towTables.txt");
+	        Iterator<String> listIt = s.iterator();
 	        
 	        try {
 	            if (!fileOut.exists()) {
@@ -917,9 +968,13 @@ private void correctGender() { //US21
 	            FileWriter fw = new FileWriter(fileOut, true);
 	            BufferedWriter out = new BufferedWriter(fw);
 	            
-	            out.write("Deceased individuals:\r\n");
+	            out.write("\r\n");
+	            out.write(title);
 	            
-	                out.write(deceased);
+	            while (listIt.hasNext()) {
+	                String list = listIt.next();
+	                out.write(list + "\r\n");
+	            }
 	            
 	            out.close();
 	        } catch (IOException e) {
